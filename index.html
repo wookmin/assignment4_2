@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>상품 관리</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 과제 #2에서 사용하던 공용 스타일 -->
+  <link rel="stylesheet" href="my.css" />
+  <!-- Bootstrap 5 CSS (모달용) -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    body {
+      background-color: var(--bg, whitesmoke);
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      background: var(--card-bg, #fff);
+      padding: 24px 28px;
+      border-radius: 10px;
+      box-shadow: var(--shadow, 0 4px 12px black);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-left {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+      background: #eee;
+      margin-left: 6px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background-color: var(--primary, skyblue);
+      color: #fff;
+      text-decoration: none;
+    }
+    .btn:hover {
+      background-color: var(--primary-hover, skyblue);
+    }
+    .btn-gray {
+      background-color: var(--gray, gray);
+    }
+    .btn-gray:hover {
+      background-color: var(--gray-hover, darkgray);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+
+    th, td {
+      border: 1px solid var(--muted-border, whitesmoke);
+      padding: 10px;
+      font-size: 14px;
+      text-align: left;
+      background: #fff;
+    }
+
+    thead th {
+      background: #f5f5f5;
+      font-weight: 600;
+    }
+
+    td.num {
+      text-align: right;
+    }
+
+    @media (max-width: 600px) {
+      .wrap {
+        padding: 20px 18px;
+      }
+      th, td {
+        font-size: 13px;
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>상품 관리</h1>
+
+  <div class="wrap">
+    <!-- 상단 툴바 -->
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <strong>API:</strong>
+        <code id="apiUrlText"></code>
+        <span class="badge">mockapi</span>
+      </div>
+      <div>
+        <button id="openCreateBtn" class="btn" type="button">상품 추가</button>
+        <button id="reloadBtn" class="btn btn-gray" type="button">목록 새로고침</button>
+      </div>
+    </div>
+
+    <!-- 목록 테이블 -->
+    <table aria-label="상품 목록">
+      <thead>
+        <tr>
+          <th style="width:60px;">ID</th>
+          <th>상품명</th>
+          <th>품목</th>
+          <th style="width:120px;">가격(₩)</th>
+          <th style="width:100px;">수량</th>
+          <th style="width:160px;">동작</th>
+        </tr>
+      </thead>
+      <tbody id="productTbody">
+        <!-- JS로 렌더링 -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ✅ 모달: 추가/수정 공용 -->
+  <div
+    class="modal fade"
+    id="productModal"
+    tabindex="-1"
+    aria-labelledby="productModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form id="productForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel">상품 추가</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+          </div>
+          <div class="modal-body">
+            <!-- 수정 시 사용할 hidden id -->
+            <input type="hidden" id="productId" />
+
+            <div class="mb-3">
+              <label for="productName" class="form-label">상품명 *</label>
+              <input
+                type="text"
+                id="productName"
+                class="form-control"
+                placeholder="예) 무선 이어폰 A1"
+                required
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="productCategory" class="form-label">품목 *</label>
+              <input
+                type="text"
+                id="productCategory"
+                class="form-control"
+                placeholder="예) 전자기기"
+                required
+              />
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="productPrice" class="form-label">가격(₩) *</label>
+                <input
+                  type="number"
+                  id="productPrice"
+                  class="form-control"
+                  min="0"
+                  step="1"
+                  placeholder="예) 79000"
+                  required
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="productQuantity" class="form-label">수량 *</label>
+                <input
+                  type="number"
+                  id="productQuantity"
+                  class="form-control"
+                  min="0"
+                  step="1"
+                  placeholder="예) 25"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-gray"
+              data-bs-dismiss="modal"
+            >
+              취소
+            </button>
+            <button type="submit" class="btn" id="saveBtn">
+              저장
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS (모달 동작용) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ===== 설정값 =====
+    // 👉 여기 BASE_URL만 네 mockapi 주소로 맞추면 돼
+    const BASE_URL = "https://6918280021a96359486eeaad.mockapi.io/products";
+
+    const tbody = document.getElementById("productTbody");
+    const form = document.getElementById("productForm");
+    const idInput = document.getElementById("productId");
+    const nameInput = document.getElementById("productName");
+    const categoryInput = document.getElementById("productCategory");
+    const priceInput = document.getElementById("productPrice");
+    const quantityInput = document.getElementById("productQuantity");
+    const saveBtn = document.getElementById("saveBtn");
+    const reloadBtn = document.getElementById("reloadBtn");
+    const openCreateBtn = document.getElementById("openCreateBtn");
+    const apiUrlText = document.getElementById("apiUrlText");
+    apiUrlText.textContent = BASE_URL;
+
+    const productModalEl = document.getElementById("productModal");
+    const productModal = new bootstrap.Modal(productModalEl);
+
+    // 숫자 포맷
+    function formatNumber(n) {
+      return Number(n).toLocaleString("ko-KR");
+    }
+
+    // ===== 목록 테이블 그리기 =====
+    function renderTable(products) {
+      tbody.innerHTML = "";
+
+      if (!products || products.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="6" style="text-align:center; color:#777;">데이터가 없습니다.</td></tr>';
+        return;
+      }
+
+      products.forEach(function (p) {
+        const tr = document.createElement("tr");
+
+        const tdId = document.createElement("td");
+        tdId.textContent = p.id;
+        tdId.className = "num";
+
+        const tdName = document.createElement("td");
+        tdName.textContent = p.name;
+
+        const tdCategory = document.createElement("td");
+        tdCategory.textContent = p.category;
+
+        const tdPrice = document.createElement("td");
+        tdPrice.textContent = formatNumber(p.price);
+        tdPrice.className = "num";
+
+        const tdQuantity = document.createElement("td");
+        tdQuantity.textContent = p.quantity;
+        tdQuantity.className = "num";
+
+        const tdActions = document.createElement("td");
+
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.textContent = "수정";
+        editBtn.className = "btn";
+        editBtn.style.padding = "6px 10px";
+        editBtn.style.fontSize = "12px";
+        editBtn.addEventListener("click", function () {
+          fillFormForEdit(p);
+        });
+
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.textContent = "삭제";
+        delBtn.className = "btn btn-gray";
+        delBtn.style.padding = "6px 10px";
+        delBtn.style.fontSize = "12px";
+        delBtn.style.marginLeft = "6px";
+        delBtn.addEventListener("click", function () {
+          deleteProduct(p.id);
+        });
+
+        tdActions.appendChild(editBtn);
+        tdActions.appendChild(delBtn);
+
+        tr.appendChild(tdId);
+        tr.appendChild(tdName);
+        tr.appendChild(tdCategory);
+        tr.appendChild(tdPrice);
+        tr.appendChild(tdQuantity);
+        tr.appendChild(tdActions);
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ===== GET: 목록 조회 =====
+    function loadProducts() {
+      const xhr = new XMLHttpRequest();
+      xhr.open("GET", BASE_URL);
+      xhr.setRequestHeader("content-type", "application/json");
+      xhr.send();
+
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          const res = JSON.parse(xhr.responseText);
+          renderTable(res);
+        } else {
+          console.log(xhr.status, xhr.statusText);
+          alert("상품 목록을 불러오는 데 실패했어.");
+        }
+      };
+    }
+
+    // ===== 폼 초기화 =====
+    function resetForm() {
+      idInput.value = "";
+      nameInput.value = "";
+      categoryInput.value = "";
+      priceInput.value = "";
+      quantityInput.value = "";
+      saveBtn.textContent = "저장";
+    }
+
+    // ===== 모달: 추가 모드로 열기 =====
+    function openCreateModal() {
+      resetForm();
+      document.getElementById("productModalLabel").textContent = "상품 추가";
+      productModal.show();
+    }
+
+    // ===== 폼을 수정 모드로 채우고 모달 열기 =====
+    function fillFormForEdit(product) {
+      idInput.value = product.id;
+      nameInput.value = product.name;
+      categoryInput.value = product.category;
+      priceInput.value = product.price;
+      quantityInput.value = product.quantity;
+      saveBtn.textContent = "수정 완료";
+      document.getElementById("productModalLabel").textContent = "상품 수정";
+      productModal.show();
+    }
+
+    // ===== POST: 새 데이터 추가 =====
+    function createProduct(payload) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", BASE_URL);
+      xhr.setRequestHeader("content-type", "application/json");
+      xhr.send(JSON.stringify(payload));
+
+      xhr.onload = function () {
+        if (xhr.status === 201 || xhr.status === 200) {
+          alert("상품이 추가되었어.");
+          productModal.hide();
+          loadProducts();
+        } else {
+          console.log(xhr.status, xhr.statusText);
+          alert("상품 추가에 실패했어.");
+        }
+      };
+    }
+
+    // ===== PUT: 기존 데이터 수정 =====
+    function updateProduct(id, payload) {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", BASE_URL + "/" + encodeURIComponent(id));
+      xhr.setRequestHeader("content-type", "application/json");
+      xhr.send(JSON.stringify(payload));
+
+      xhr.onload = function () {
+        if (xhr.status === 200) {
+          alert("수정이 완료되었어.");
+          productModal.hide();
+          loadProducts();
+        } else {
+          console.log(xhr.status, xhr.statusText);
+          alert("상품 수정에 실패했어.");
+        }
+      };
+    }
+
+    // ===== DELETE: 데이터 삭제 =====
+    function deleteProduct(id) {
+      if (!confirm("ID " + id + "번 상품을 삭제할까?")) return;
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("DELETE", BASE_URL + "/" + encodeURIComponent(id));
+      xhr.send();
+
+      xhr.onload = function () {
+        if (xhr.status === 200 || xhr.status === 204) {
+          alert("삭제되었어.");
+          loadProducts();
+        } else {
+          console.log(xhr.status, xhr.statusText);
+          alert("상품 삭제에 실패했어.");
+        }
+      };
+    }
+
+    // ===== 폼 submit 이벤트 (추가/수정 공용, 모달 안에서 동작) =====
+    function handleFormSubmit(e) {
+      e.preventDefault();
+
+      const name = nameInput.value.trim();
+      const category = categoryInput.value.trim();
+      const price = Number(priceInput.value);
+      const quantity = Number(quantityInput.value);
+
+      if (name.length < 2) {
+        alert("상품명은 2글자 이상 입력해줘.");
+        nameInput.focus();
+        return;
+      }
+      if (!category) {
+        alert("품목을 입력해줘.");
+        categoryInput.focus();
+        return;
+      }
+      if (!Number.isInteger(price) || price < 0) {
+        alert("가격은 0 이상 정수로 입력해줘.");
+        priceInput.focus();
+        return;
+      }
+      if (!Number.isInteger(quantity) || quantity < 0) {
+        alert("수량은 0 이상 정수로 입력해줘.");
+        quantityInput.focus();
+        return;
+      }
+
+      const id = idInput.value;
+      const payload = {
+        name: name,
+        category: category,
+        price: price,
+        quantity: quantity
+      };
+
+      if (id) {
+        updateProduct(id, payload);
+      } else {
+        createProduct(payload);
+      }
+    }
+
+    // ===== window.onload: 이벤트 연결 =====
+    window.onload = function () {
+      reloadBtn.addEventListener("click", loadProducts);
+      openCreateBtn.addEventListener("click", openCreateModal);
+      form.addEventListener("submit", handleFormSubmit);
+      loadProducts();
+    };
+  </script>
+</body>
+</html>

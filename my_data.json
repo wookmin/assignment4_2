@@ -1,0 +1,95 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "name": "무선 이어폰 A1",
+      "category": "전자기기",
+      "price": 79000,
+      "quantity": 25
+    },
+    {
+      "id": "2",
+      "name": "텀블러 500ml",
+      "category": "생활용품",
+      "price": 18000,
+      "quantity": 40
+    },
+    {
+      "id": "3",
+      "name": "A5 노트(닷)",
+      "category": "문구",
+      "price": 4500,
+      "quantity": 120
+    },
+    {
+      "id": "4",
+      "name": "에어프라이어 3L",
+      "category": "주방",
+      "price": 69000,
+      "quantity": 10
+    },
+    {
+      "id": "5",
+      "name": "오가닉 코튼 티",
+      "category": "의류",
+      "price": 22000,
+      "quantity": 60
+    },
+    {
+      "id": "6",
+      "name": "블루투스 스피커 GZ",
+      "category": "가전",
+      "price": 129000,
+      "quantity": 8
+    },
+    {
+      "id": "7",
+      "name": "디자인 리서치 가이드",
+      "category": "도서",
+      "price": 27000,
+      "quantity": 35
+    },
+    {
+      "id": "8",
+      "name": "콜드브루 원액 1L",
+      "category": "식품",
+      "price": 12900,
+      "quantity": 55
+    },
+    {
+      "id": "9",
+      "name": "USB-C 케이블 1m",
+      "category": "악세서리",
+      "price": 6900,
+      "quantity": 200
+    },
+    {
+      "id": "10",
+      "name": "폴딩 데스크 1000",
+      "category": "가구",
+      "price": 89000,
+      "quantity": 12
+    },
+    {
+      "id": "11",
+      "name": "보온 보냉백",
+      "category": "생활용품",
+      "price": 15000,
+      "quantity": 30
+    },
+    {
+      "id": "12",
+      "name": "무선 마우스 L",
+      "category": "전자기기",
+      "price": 24900,
+      "quantity": 75
+    },
+    {
+      "id": "1791",
+      "name": "ㅇㄴㅁㄹ",
+      "category": "ㅁㄹㅇㄴ",
+      "price": 3224,
+      "quantity": 32
+    }
+  ]
+}
